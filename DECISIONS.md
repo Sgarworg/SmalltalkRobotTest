@@ -65,18 +65,21 @@ Audio-Pipeline: ElevenLabs MP3 → ffmpeg → PCM → sounddevice.
 
 ---
 
-## Sprachmodell: Claude (claude_agent_sdk)
+## Sprachmodell: Ollama + qwen:latest (lokal)
 
-**Library:** `claude_agent_sdk` mit `ClaudeSDKClient`
-Konkretes Modell nicht explizit gesetzt — SDK-Default.
-`permission_mode="bypassPermissions"` damit Tools ohne Rückfrage ausgeführt werden.
+**Library:** `ollama` Python-Client (`AsyncClient`)
+**Modell:** `qwen:latest` auf NVIDIA Spark via Ollama
+Modell konfigurierbar per `ollama_model` in `config.json`.
+
+Ablösung von `claude_agent_sdk` + Anthropic API — vollständig lokal, keine API-Kosten.
 
 ---
 
-## Tool-Integration: MCP (Model Context Protocol)
+## Tool-Integration: Ollama Tool Calling (nativ)
 
-Tools laufen als lokaler MCP-Server (`create_sdk_mcp_server`).
-Vorteil: Claude kann Tools direkt aufrufen ohne Custom-Parsing.
+Tools als plain async Python-Funktionen, Ollama-Schemas als Liste in `TOOLS`.
+Dispatch über `TOOL_MAP` (Name → Funktion) in `tools.py`.
+Ablösung von MCP — einfacher, kein separater Server-Prozess.
 
 ---
 

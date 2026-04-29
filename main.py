@@ -1,42 +1,46 @@
 import asyncio
-from tools import tools_server
+from ollama import AsyncClient
 from voice_input import transcribe
 from voice_output import speak
-from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, ResultMessage, AssistantMessage, ToolUseBlock
 from config import config
-
+from tools import TOOLS, TOOL_MAP
 
 
 async def main():
-    options = ClaudeAgentOptions(
-        mcp_servers={"tools": tools_server},
-        allowed_tools=["mcp__tools__get_temperature", "mcp__tools__get_rain", "mcp__tools__get_joke", "mcp__tools__exit_app", "delete_recipe", "get_recipes","save_recipe"],
-        system_prompt=config["system_prompt"],
-        permission_mode="bypassPermissions",
-    )
+    client = AsyncClient()
+    messages = [{"role": "system", "content": config["system_prompt"]}]
 
-    async with ClaudeSDKClient(options=options) as client:
+    while True:
+        user_input = transcribe()
+        print(f"Du: {user_input}")
+
+        if not user_input.strip():
+            print("Nichts verstanden, nochmal versuchen...")
+            continue
+
+        messages.append({"role": "user", "content": user_input})
+
         while True:
-            user_input = transcribe()
-            print(f"Du: {user_input}")
+            response = await client.chat(
+                model=config["ollama_model"],
+                messages=messages,
+                tools=TOOLS,
+            )
 
-            if not user_input.strip():
-                print("Nichts verstanden, nochmal versuchen...")
-                continue
+            msg = response.message
+            messages.append({"role": msg.role, "content": msg.content or "", "tool_calls": msg.tool_calls})
 
-            if user_input.lower().strip() in ["stop", "beenden", "tschüss"]:
-                print("Auf Wiedersehen!")
+            if msg.tool_calls:
+                for tool_call in msg.tool_calls:
+                    name = tool_call.function.name
+                    args = dict(tool_call.function.arguments)
+                    print(f"Tool verwendet: {name}")
+                    result = await TOOL_MAP[name](args)
+                    messages.append({"role": "tool", "content": result})
+            else:
+                print(f"Assistent: {msg.content}")
+                speak(msg.content)
                 break
-
-            await client.query(user_input)
-            async for message in client.receive_response():
-                if isinstance(message, AssistantMessage):
-                    for block in message.content:
-                        if isinstance(block, ToolUseBlock):
-                            print(f"Tool verwendet: {block.name}")
-                if isinstance(message, ResultMessage):
-                    print(f"Claude: {message.result}")
-                    speak(message.result)
 
 
 asyncio.run(main())

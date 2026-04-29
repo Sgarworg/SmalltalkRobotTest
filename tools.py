@@ -1,18 +1,11 @@
 from typing import Any
 import httpx
 import sys
-from claude_agent_sdk import tool, create_sdk_mcp_server
 from database import recipes
 from tinydb import Query
 
 
-
-@tool(
-    "get_temperature",
-    "Get the current temperature at a location",
-    {"latitude": float, "longitude": float},
-)
-async def get_temperature(args: dict[str, Any]) -> dict[str, Any]:
+async def get_temperature(args: dict[str, Any]) -> str:
     async with httpx.AsyncClient() as client:
         response = await client.get(
             "https://api.open-meteo.com/v1/forecast",
@@ -24,23 +17,10 @@ async def get_temperature(args: dict[str, Any]) -> dict[str, Any]:
             },
         )
         data = response.json()
-
-    return {
-        "content": [
-            {
-                "type": "text",
-                "text": f"Temperature: {data['current']['temperature_2m']}°F",
-            }
-        ]
-    }
+    return f"Temperature: {data['current']['temperature_2m']}°F"
 
 
-@tool(
-    "get_rain",
-    "Get the current precipitation and rain probability at a location",
-    {"latitude": float, "longitude": float},
-)
-async def get_rain(args: dict[str, Any]) -> dict[str, Any]:
+async def get_rain(args: dict[str, Any]) -> str:
     async with httpx.AsyncClient() as client:
         response = await client.get(
             "https://api.open-meteo.com/v1/forecast",
@@ -53,60 +33,27 @@ async def get_rain(args: dict[str, Any]) -> dict[str, Any]:
             },
         )
         data = response.json()
-
     current = data["current"]
     rain_prob = data["hourly"]["precipitation_probability"][0]
-
-    return {
-        "content": [
-            {
-                "type": "text",
-                "text": f"Niederschlag: {current['precipitation']}mm, Regen: {current['rain']}mm, Regenwahrscheinlichkeit: {rain_prob}%",
-            }
-        ]
-    }
+    return f"Niederschlag: {current['precipitation']}mm, Regen: {current['rain']}mm, Regenwahrscheinlichkeit: {rain_prob}%"
 
 
-@tool(
-    "get_joke",
-    "Get a random joke in a specific category. Categories: Programming, Misc, Dark, Pun, Spooky, Christmas, Any",
-    {"category": str},
-)
-async def get_joke(args: dict[str, Any]) -> dict[str, Any]:
+async def get_joke(args: dict[str, Any]) -> str:
     category = args.get("category", "Any")
-
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f"https://v2.jokeapi.dev/joke/{category}",
             params={"lang": "de", "type": "twopart"},
         )
         data = response.json()
-
-    return {
-        "content": [
-            {
-                "type": "text",
-                "text": f"{data['setup']} - {data['delivery']}\n\nAnweisung: Erkläre ihn nicht und frag danach ob der Nutzer noch einen möchte.",
-            }
-        ]
-    }
+    return f"{data['setup']} - {data['delivery']}\n\nAnweisung: Erkläre ihn nicht und frag danach ob der Nutzer noch einen möchte."
 
 
-@tool(
-    "exit_app",
-    "WICHTIG: Dieses Tool MUSS aufgerufen werden wenn der Nutzer die Anwendung beenden will. Beispiele: 'geh weg', 'tschüss', 'exit', 'auf wiedersehen', 'ich bin fertig', fluchen. Rufe dieses Tool SOFORT auf ohne zu antworten.",
-    {},
-)
-async def exit_app(args: dict[str, Any]) -> dict[str, Any]:
+async def exit_app(args: dict[str, Any]) -> str:
     sys.exit(0)
 
-@tool(
-    "save_recipe",
-    "Speichert ein Rezept in der Datenbank.",
-    {"name": str, "zutaten": str, "anleitung": str, "kochzeit": int, "kategorie": str},
-)
-async def save_recipe(args: dict[str, Any]) -> dict[str, Any]:
-    print(f" save_recipe aufgerufen mit: {args}")
+
+async def save_recipe(args: dict[str, Any]) -> str:
     recipes.insert({
         "name": args["name"],
         "zutaten": args["zutaten"],
@@ -114,39 +61,134 @@ async def save_recipe(args: dict[str, Any]) -> dict[str, Any]:
         "kochzeit": args.get("kochzeit", 0),
         "kategorie": args.get("kategorie", ""),
     })
-    print("Rezept gespeichert!")
-    return {"content": [{"type": "text", "text": f"Rezept '{args['name']}' gespeichert!"}]}
+    return f"Rezept '{args['name']}' gespeichert!"
 
 
-@tool(
-    "get_recipes",
-    "Gibt alle Rezepte oder ein bestimmtes Rezept aus der Datenbank zurück.",
-    {"name": str},
-)
-async def get_recipes(args: dict[str, Any]) -> dict[str, Any]:
-    print(f" get_recipe aufgerufen mit: {args}")
+async def get_recipes(args: dict[str, Any]) -> str:
     name = args.get("name", "")
     if name:
         R = Query()
-        result = recipes.search(R.name.matches(name, flags=2))  # case insensitive
+        result = recipes.search(R.name.matches(name, flags=2))
     else:
         result = recipes.all()
-    print(result)
-    return {"content": [{"type": "text", "text": str(result)}]}
+    return str(result)
 
 
-@tool(
-    "delete_recipe",
-    "Löscht ein Rezept aus der Datenbank anhand des Namens.",
-    {"name": str},
-)
-async def delete_recipe(args: dict[str, Any]) -> dict[str, Any]:
+async def delete_recipe(args: dict[str, Any]) -> str:
     R = Query()
     recipes.remove(R.name == args["name"])
-    return {"content": [{"type": "text", "text": f"Rezept '{args['name']}' gelöscht!"}]}
+    return f"Rezept '{args['name']}' gelöscht!"
 
-tools_server = create_sdk_mcp_server(
-    name="tools",
-    version="1.0.0",
-    tools=[get_temperature, get_rain, get_joke, exit_app,save_recipe,get_recipes,delete_recipe ],
-)
+
+TOOL_MAP = {
+    "get_temperature": get_temperature,
+    "get_rain": get_rain,
+    "get_joke": get_joke,
+    "exit_app": exit_app,
+    "save_recipe": save_recipe,
+    "get_recipes": get_recipes,
+    "delete_recipe": delete_recipe,
+}
+
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_temperature",
+            "description": "Get the current temperature at a location",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {"type": "number"},
+                    "longitude": {"type": "number"},
+                },
+                "required": ["latitude", "longitude"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_rain",
+            "description": "Get the current precipitation and rain probability at a location",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {"type": "number"},
+                    "longitude": {"type": "number"},
+                },
+                "required": ["latitude", "longitude"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_joke",
+            "description": "Get a random joke in a specific category. Categories: Programming, Misc, Dark, Pun, Spooky, Christmas, Any",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "category": {"type": "string"},
+                },
+                "required": ["category"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "exit_app",
+            "description": "WICHTIG: Dieses Tool MUSS aufgerufen werden wenn der Nutzer die Anwendung beenden will. Beispiele: 'geh weg', 'tschüss', 'exit', 'auf wiedersehen', 'ich bin fertig', fluchen.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "save_recipe",
+            "description": "Speichert ein Rezept in der Datenbank.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "zutaten": {"type": "string"},
+                    "anleitung": {"type": "string"},
+                    "kochzeit": {"type": "integer"},
+                    "kategorie": {"type": "string"},
+                },
+                "required": ["name", "zutaten", "anleitung"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_recipes",
+            "description": "Gibt alle Rezepte oder ein bestimmtes Rezept aus der Datenbank zurück.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                },
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "delete_recipe",
+            "description": "Löscht ein Rezept aus der Datenbank anhand des Namens.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                },
+                "required": ["name"],
+            },
+        },
+    },
+]
