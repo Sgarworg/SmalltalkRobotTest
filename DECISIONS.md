@@ -35,15 +35,25 @@ pyttsx3 klingt schlecht. ElevenLabs fällt weg (API). Kandidaten für GPU-beschl
 - **Piper** — leichtgewichtig, deutsche Stimmen verfügbar
 - **Coqui XTTS v2** — hohe Qualität, braucht mehr VRAM
 
-**Vorerst: Piper TTS** (`de_DE-thorsten-high`)
-- Einzige Option die mit Python 3.13 läuft (Coqui XTTS v2 braucht <3.12)
-- Kein GPU nötig, ONNX-basiert, sehr schnell
-- Modell wird einmal beim Start geladen, Ausgabe direkt via `sounddevice`
-- Modell-Datei: `de_DE-thorsten-high.onnx` (+ `.onnx.json`) im Projektordner
+**Getestet & verworfen: Piper TTS** (`de_DE-thorsten-high`)
+- Ausgabe weitgehend unverständlich: hakelig, stark rauschend, manchmal einzelne Wörter verständlich
+- Ursache: Modell-Samplerate 22050 Hz vs. Gerät 44100 Hz → Resample-Versuch brachte keine nennenswerte Verbesserung
+- Grundqualität des Modells zu niedrig für den Pflegekontext
 
-**Geplant: Coqui XTTS v2** sobald Python auf 3.11 gewechselt wird
-- Deutlich natürlichere Stimme, Voice Cloning möglich
-- Braucht GPU (8–16 GB VRAM) → gut für NVIDIA Spark
+**Getestet & verworfen: Kokoro TTS**
+- Kein Deutsch-Support (nur EN, ES, FR, IT, JA, ZH)
+
+**Aktuell: Coqui XTTS v2** (`tts_models/multilingual/multi-dataset/xtts_v2`)
+- Python 3.12 kompatibel (vorherige Annahme Python 3.13 war falsch — System läuft auf 3.12)
+- Sehr natürliche Stimme, Mehrsprachig inkl. Deutsch
+- Voice Cloning möglich (für personalisierte Roboter-Stimme relevant)
+- Modell liegt in `~/.local/share/tts/` (~1.87 GB, einmalig heruntergeladen)
+- GPU-Beschleunigung via CUDA wenn verfügbar, fällt auf CPU zurück
+
+**Qualität noch nicht abschließend bewertet**
+- Hakelige Ausgabe bisher über Windows-App (Claude Code Remote) gehört — Audio läuft dabei über Netzwerk-Routing, kein verlässlicher Qualitätstest
+- Zum echten Test: WAV-Datei direkt auf der Maschine abspielen (`/tmp/tts_test.wav`)
+- Befehl: `aplay /tmp/tts_test.wav` oder `ffplay /tmp/tts_test.wav`
 
 ---
 
