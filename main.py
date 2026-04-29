@@ -1,7 +1,7 @@
 import asyncio
 from tools import tools_server
 from voice_input import transcribe
-from voice_output import speak, cheap_speak
+from voice_output import speak
 from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, ResultMessage, AssistantMessage, ToolUseBlock
 from config import config
 
@@ -36,10 +36,7 @@ async def main():
                             print(f"Tool verwendet: {block.name}")
                 if isinstance(message, ResultMessage):
                     print(f"Claude: {message.result}")
-                    if config["expensive_tts"]:
-                        await speak(message.result)
-                    else:
-                        cheap_speak(message.result)
+                    speak(message.result)
 
 
 asyncio.run(main())
