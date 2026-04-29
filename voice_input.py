@@ -1,8 +1,23 @@
+import sys
 import sounddevice as sd
 import soundfile as sf
 import numpy as np
 from config import config
 from faster_whisper import WhisperModel
+
+DEBUG_MODE = True
+
+DEBUG_INPUTS = {
+    "1": "Hallo, wie geht es dir?",
+    "2": "Was kannst du alles für mich tun?",
+    "3": "Zeig mir meine Rezepte.",
+    "4": "Wie wird das Wetter heute?",
+    "5": "Erinnere mich morgen um 9 Uhr an den Arzttermin.",
+    "q": "geh weg",
+}
+
+def _debug_transcribe():
+    return input("Du: ").strip()
 
 
 model = WhisperModel(config["whisper_model"], device="cpu", compute_type="int8")
@@ -53,6 +68,8 @@ def record_audio(seconds=5, samplerate=16000):
     sf.write("temp.wav", audio, samplerate)
 
 def transcribe():
+    if DEBUG_MODE:
+        return _debug_transcribe()
     record_until_silence()
     segments, _ = model.transcribe("temp.wav", language="de")
     text = " ".join([s.text for s in segments])

@@ -1,6 +1,9 @@
 # Entscheidungen & Modelle
 
-## Ziel: Vollständig lokaler Betrieb (kein API-Geld)
+## Projektziel
+
+Sprachassistent für einen Roboter — vollständig lokal, kein Cloud-API-Geld.
+Der Nutzer spricht mit dem Roboter, der versteht, denkt nach und antwortet per Sprache.
 
 Hardware: NVIDIA Spark (lokales GPU-System mit Ollama)
 
@@ -20,7 +23,8 @@ Optionen:
 - Ollama direkt per HTTP (`/api/chat`) mit eigenem Tool-Calling-Loop
 - OpenAI-kompatibler Endpoint von Ollama + passendes SDK
 
-**Offen:** Tool-Calling-Support des gewählten Modells prüfen (nicht alle Ollama-Modelle können das zuverlässig).
+**Getestet & verworfen:** `qwen:latest` — kein Tool-Calling-Support.
+**Aktuell:** `qwen3:8b` — unterstützt Tool Calling, schnell, läuft lokal auf dem Spark.
 
 ---
 
@@ -69,6 +73,7 @@ Audio-Pipeline: ElevenLabs MP3 → ffmpeg → PCM → sounddevice.
 
 **Library:** `ollama` Python-Client (`AsyncClient`)
 **Inference-Server:** Ollama (Entwicklung), vLLM (Produktion auf dem Spark)
+**Aktuelles Modell:** `qwen3:8b`
 Modell konfigurierbar per `ollama_model` in `config.json`.
 
 Ablösung von `claude_agent_sdk` + Anthropic API — vollständig lokal, keine API-Kosten, Datenschutz gewährleistet (Pflegedaten bleiben lokal).
@@ -84,6 +89,11 @@ Gemma 3 27B wurde geprüft und verworfen: kein natives Tool Calling.
 
 Modell per `config.json` umschaltbar — ermöglicht empirischen Vergleich (Latenz vs. wahrgenommene Natürlichkeit) als Teil der Thesis-Evaluation.
 
+**Modell-Auswahl:**
+- `qwen:latest` → verworfen, kein Tool-Calling-Support
+- `qwen3:32b` → Tool Calling ✅, aber langsam (20 GB)
+- `qwen3:8b` → Tool Calling ✅, deutlich schneller, aktuell im Einsatz
+
 ---
 
 ## Tool-Integration: Ollama Tool Calling (nativ)
@@ -91,6 +101,14 @@ Modell per `config.json` umschaltbar — ermöglicht empirischen Vergleich (Late
 Tools als plain async Python-Funktionen, Ollama-Schemas als Liste in `TOOLS`.
 Dispatch über `TOOL_MAP` (Name → Funktion) in `tools.py`.
 Ablösung von MCP — einfacher, kein separater Server-Prozess.
+
+---
+
+## Debug-Modus: Texteingabe statt Mikrofon
+
+`DEBUG_MODE = True` in `voice_input.py` ersetzt die Mikrofon-Aufnahme durch einfache Texteingabe (`input()`).
+Hintergrund: Entwicklung läuft remote über Windows-App auf dem NVIDIA Spark — kein Mikrofon-Zugriff möglich.
+Zum Aktivieren des echten Sprachmodus: `DEBUG_MODE = False` setzen.
 
 ---
 
