@@ -9,7 +9,7 @@ Ziel ist ein vollständig lokaler, deutschsprachiger Voice Assistant auf einem R
 
 Lies immer **`DECISIONS.md`** bevor du Architektur- oder Modell-Entscheidungen triffst oder vorschlägst. Dort sind alle bisherigen Entscheidungen mit Begründung dokumentiert. Neue Entscheidungen dort nachtragen.
 
-Lies **`cloud.md`** für Benchmark-Ergebnisse der getesteten LLM-Modelle (Latenz, tok/s, Tool Calling).
+Lies **`benchmark_results.md`** für Benchmark-Ergebnisse der getesteten LLM-Modelle (Latenz, tok/s, Tool Calling).
 
 ## Stack
 
@@ -32,21 +32,29 @@ Voraussetzung: Ollama läuft auf dem NVIDIA Spark und das konfigurierte Modell i
 ## Benchmarks ausführen
 
 ```bash
-python benchmark.py   # schreibt Ergebnisse in cloud.md
+python benchmark/llm_benchmark.py   # schreibt Ergebnisse in benchmark/benchmark_results.md
 ```
 
-Modelle in `benchmark.py → MODELS` anpassen (nur bereits gepullte Modelle eintragen).
+Modelle in `benchmark/llm_benchmark.py → MODELS` anpassen (nur bereits gepullte Modelle eintragen).
 
 ## Architektur
 
 ```
-main.py          — Hauptschleife: STT → Ollama Tool-Calling Loop → TTS
-tools.py         — Tool-Funktionen (async) + TOOLS (Schemas) + TOOL_MAP (Dispatch)
-voice_input.py   — Aufnahme (sounddevice) + Transkription (faster-whisper)
-voice_output.py  — Piper TTS → sounddevice
-config.py        — lädt config.json
-database.py      — TinyDB-Instanz für Rezepte
-benchmark.py     — Modell-Benchmarks, schreibt cloud.md
+main.py                        — Hauptschleife: STT → Ollama Tool-Calling Loop → TTS
+config.json                    — Konfiguration (Modell, Prompts, Schwellwerte)
+core/
+  config.py                    — lädt config.json
+  database.py                  — TinyDB-Instanz für Rezepte
+  tools.py                     — Tool-Funktionen (async) + TOOLS (Schemas) + TOOL_MAP (Dispatch)
+voice/
+  input.py                     — Aufnahme (sounddevice) + Transkription (faster-whisper)
+  output.py                    — Piper TTS → sounddevice
+data/
+  database.json                — TinyDB-Datenbank (Rezepte)
+models/                        — Piper TTS Modelle (gitignored, manuell herunterladen)
+benchmark/
+  llm_benchmark.py             — Modell-Benchmarks
+  benchmark_results.md         — Benchmark-Ergebnisse (automatisch generiert)
 ```
 
 ### Tool-Calling Loop (`main.py`)

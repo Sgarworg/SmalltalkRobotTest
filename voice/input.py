@@ -2,7 +2,7 @@ import sys
 import sounddevice as sd
 import soundfile as sf
 import numpy as np
-from config import config
+from core.config import config
 from faster_whisper import WhisperModel
 
 DEBUG_MODE = True

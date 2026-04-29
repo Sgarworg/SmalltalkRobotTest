@@ -1,7 +1,7 @@
 import numpy as np
 import sounddevice as sd
 from piper import PiperVoice
-from config import config
+from core.config import config
 
 tts_model = PiperVoice.load(config["piper_model"])
 

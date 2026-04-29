@@ -1,9 +1,9 @@
 import asyncio
 from ollama import AsyncClient
-from voice_input import transcribe
-from voice_output import speak
-from config import config
-from tools import TOOLS, TOOL_MAP
+from voice.input import transcribe
+from voice.output import speak
+from core.config import config
+from core.tools import TOOLS, TOOL_MAP
 
 
 async def main():

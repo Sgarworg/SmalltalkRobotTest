@@ -1,7 +1,7 @@
 from typing import Any
 import httpx
 import sys
-from database import recipes
+from core.database import recipes
 from tinydb import Query
 
 

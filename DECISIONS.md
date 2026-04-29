@@ -86,6 +86,11 @@ Ablösung von `claude_agent_sdk` + Anthropic API — vollständig lokal, keine A
 | **Qwen3-32B** | Besser bei Emotion & Nuance, langsamer | Erzählmodus, emotionale Gespräche, Demenz-Anwendungsfall |
 
 Gemma 3 27B wurde geprüft und verworfen: kein natives Tool Calling.
+Gemma 4 31B wurde geprüft und verworfen: Modell nicht verfügbar / nicht gepullt (404).
+
+**In Evaluierung: `mistral:7b`**
+Europäisches Unternehmen (Mistral AI, Frankreich) — DSGVO-konformes Herkunftsland, relevant für Pflegedaten-Kontext.
+Wird als dritter Benchmark-Kandidat getestet (Latenz, Deutsch-Qualität, Tool Calling).
 
 Modell per `config.json` umschaltbar — ermöglicht empirischen Vergleich (Latenz vs. wahrgenommene Natürlichkeit) als Teil der Thesis-Evaluation.
 

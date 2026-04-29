@@ -1,4 +1,4 @@
 from tinydb import TinyDB, Query
 
-db = TinyDB("database.json")
+db = TinyDB("data/database.json")
 recipes = db.table("recipes")
