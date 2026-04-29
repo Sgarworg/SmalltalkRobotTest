@@ -1,9 +1,35 @@
 # Modell-Benchmark
+Zuletzt ausgeführt: 2026-04-29 23:14
 
-Noch nicht ausgeführt. Starte mit:
+Getestete Modelle auf dem NVIDIA Spark via Ollama.
+Metriken: TTFT = Time to First Token, tok/s = generierte Tokens pro Sekunde.
 
-```bash
-python benchmark.py
-```
+## qwen3:8b
 
-Testet alle Modelle in `benchmark.py → MODELS` und überschreibt diese Datei mit den Ergebnissen.
+| Test | TTFT (ms) | Gesamt (ms) | Tokens | tok/s | Tool aufgerufen |
+|---|---|---|---|---|---|
+| Small Talk | – | – | – | – | Fehler: All connection attempts failed |
+| Reasoning / längere Antwort | – | – | – | – | Fehler: All connection attempts failed |
+| Tool Calling | – | – | – | – | Fehler: All connection attempts failed |
+
+### Beispielantworten
+
+## qwen3:32b
+
+| Test | TTFT (ms) | Gesamt (ms) | Tokens | tok/s | Tool aufgerufen |
+|---|---|---|---|---|---|
+| Small Talk | – | – | – | – | Fehler: All connection attempts failed |
+| Reasoning / längere Antwort | – | – | – | – | Fehler: All connection attempts failed |
+| Tool Calling | – | – | – | – | Fehler: All connection attempts failed |
+
+### Beispielantworten
+
+## gemma3:27b
+
+| Test | TTFT (ms) | Gesamt (ms) | Tokens | tok/s | Tool aufgerufen |
+|---|---|---|---|---|---|
+| Small Talk | – | – | – | – | Fehler: All connection attempts failed |
+| Reasoning / längere Antwort | – | – | – | – | Fehler: All connection attempts failed |
+| Tool Calling | – | – | – | – | Fehler: All connection attempts failed |
+
+### Beispielantworten
