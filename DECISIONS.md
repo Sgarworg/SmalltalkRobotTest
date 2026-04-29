@@ -65,13 +65,24 @@ Audio-Pipeline: ElevenLabs MP3 → ffmpeg → PCM → sounddevice.
 
 ---
 
-## Sprachmodell: Ollama + qwen:latest (lokal)
+## Sprachmodell: Ollama + Qwen3 (lokal auf NVIDIA Spark)
 
 **Library:** `ollama` Python-Client (`AsyncClient`)
-**Modell:** `qwen:latest` auf NVIDIA Spark via Ollama
+**Inference-Server:** Ollama (Entwicklung), vLLM (Produktion auf dem Spark)
 Modell konfigurierbar per `ollama_model` in `config.json`.
 
-Ablösung von `claude_agent_sdk` + Anthropic API — vollständig lokal, keine API-Kosten.
+Ablösung von `claude_agent_sdk` + Anthropic API — vollständig lokal, keine API-Kosten, Datenschutz gewährleistet (Pflegedaten bleiben lokal).
+
+### Modellwahl: Zwei-Modell-Strategie
+
+| Modell | Stärke | Einsatz |
+|---|---|---|
+| **Qwen3-8B** | Sehr schnell, gutes Deutsch, Tool Calling | Default: Small Talk, Speiseplan, HAW-Infos |
+| **Qwen3-32B** | Besser bei Emotion & Nuance, langsamer | Erzählmodus, emotionale Gespräche, Demenz-Anwendungsfall |
+
+Gemma 3 27B wurde geprüft und verworfen: kein natives Tool Calling.
+
+Modell per `config.json` umschaltbar — ermöglicht empirischen Vergleich (Latenz vs. wahrgenommene Natürlichkeit) als Teil der Thesis-Evaluation.
 
 ---
 
