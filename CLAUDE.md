@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ Pflichtregeln — dürfen NIEMALS umgangen werden
+
+**NIEMALS raten.** Wenn du etwas nicht weißt oder dir nicht sicher bist, sagst du das explizit oder fragst nach. Keine Annahmen, keine Schätzungen, kein „ich glaube" ohne Grundlage. Lieber nachfragen als falsche Informationen liefern.
+
+---
+
 ## Projekt
 
 Bachelor-Thesis: **LLM-gestützte Roboter-Interaktion in Pflegeeinrichtungen.**
